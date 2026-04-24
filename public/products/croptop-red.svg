@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 200" width="280" height="200">
+  <defs>
+    <linearGradient id="crop-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f87171;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#dc2626;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Crop top body -->
+  <path d="M50,35 L85,15 Q100,5 120,3 Q140,1 160,3 Q180,5 195,15 L230,35 L260,70 L230,80 L230,185 L50,185 L50,80 L20,70 Z"
+    fill="url(#crop-grad)" stroke="#b91c1c" stroke-width="2"/>
+  <!-- Neckline -->
+  <path d="M115,3 Q140,20 165,3" fill="none" stroke="#b91c1c" stroke-width="2.5"/>
+  <!-- Side seams -->
+  <line x1="50" y1="80" x2="50" y2="185" stroke="#dc2626" stroke-width="1" opacity="0.5"/>
+  <line x1="230" y1="80" x2="230" y2="185" stroke="#dc2626" stroke-width="1" opacity="0.5"/>
+  <!-- Center line -->
+  <line x1="140" y1="20" x2="140" y2="185" stroke="#ef4444" stroke-width="1" opacity="0.3"/>
+</svg>
