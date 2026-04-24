@@ -1,0 +1,125 @@
+{
+  "products": [
+    {
+      "id": "product-001",
+      "name": "Classic Blue T-Shirt",
+      "category": "tops",
+      "imageUrl": "/products/tshirt-blue.svg",
+      "description": "Comfortable everyday cotton t-shirt in classic blue",
+      "price": "$19.99",
+      "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+      "color": "Blue",
+      "recommendedPosition": { "x": 0.15, "y": 0.18, "scale": 0.85 },
+      "metadata": { "type": "overlay", "defaultOpacity": 0.92 },
+      "variants": [
+        { "variantId": "v001-s", "size": "S", "color": "Blue", "style": "Fitted", "scaleFactor": 0.9 },
+        { "variantId": "v001-m", "size": "M", "color": "Blue", "style": "Fitted", "scaleFactor": 1.0 },
+        { "variantId": "v001-l", "size": "L", "color": "Blue", "style": "Relaxed", "scaleFactor": 1.1 }
+      ],
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "product-002",
+      "name": "Black Pullover Hoodie",
+      "category": "tops",
+      "imageUrl": "/products/hoodie-black.svg",
+      "description": "Cozy fleece hoodie in sleek black",
+      "price": "$49.99",
+      "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+      "color": "Black",
+      "recommendedPosition": { "x": 0.12, "y": 0.16, "scale": 0.9 },
+      "metadata": { "type": "overlay", "defaultOpacity": 0.94 },
+      "variants": [
+        { "variantId": "v002-s", "size": "S", "color": "Black", "style": "Fitted", "scaleFactor": 0.9 },
+        { "variantId": "v002-m", "size": "M", "color": "Black", "style": "Relaxed", "scaleFactor": 1.0 }
+      ],
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "product-003",
+      "name": "Denim Jacket",
+      "category": "outerwear",
+      "imageUrl": "/products/jacket-denim.svg",
+      "description": "Timeless denim jacket with classic wash",
+      "price": "$79.99",
+      "sizes": ["XS", "S", "M", "L", "XL"],
+      "color": "Denim Blue",
+      "recommendedPosition": { "x": 0.1, "y": 0.15, "scale": 0.9 },
+      "metadata": { "type": "overlay", "defaultOpacity": 0.93 },
+      "variants": [
+        { "variantId": "v003-m", "size": "M", "color": "Denim Blue", "style": "Regular", "scaleFactor": 1.0 }
+      ],
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "product-004",
+      "name": "White Summer Dress",
+      "category": "dresses",
+      "imageUrl": "/products/dress-white.svg",
+      "description": "Flowy white dress perfect for warm days",
+      "price": "$69.99",
+      "sizes": ["XS", "S", "M", "L", "XL"],
+      "color": "White",
+      "recommendedPosition": { "x": 0.18, "y": 0.17, "scale": 0.88 },
+      "metadata": { "type": "overlay", "defaultOpacity": 0.9 },
+      "variants": [{ "variantId": "v004-m", "size": "M", "color": "White", "style": "Regular", "scaleFactor": 1.0 }],
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "product-005",
+      "name": "Red Crop Top",
+      "category": "tops",
+      "imageUrl": "/products/croptop-red.svg",
+      "description": "Chic red crop top for a bold look",
+      "price": "$24.99",
+      "sizes": ["XS", "S", "M", "L"],
+      "color": "Red",
+      "recommendedPosition": { "x": 0.18, "y": 0.2, "scale": 0.75 },
+      "metadata": { "type": "overlay", "defaultOpacity": 0.93 },
+      "variants": [{ "variantId": "v005-m", "size": "M", "color": "Red", "style": "Regular", "scaleFactor": 1.0 }],
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "product-006",
+      "name": "Gray Blazer",
+      "category": "outerwear",
+      "imageUrl": "/products/blazer-gray.svg",
+      "description": "Sophisticated oversized gray blazer",
+      "price": "$89.99",
+      "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+      "color": "Gray",
+      "recommendedPosition": { "x": 0.08, "y": 0.14, "scale": 0.95 },
+      "metadata": { "type": "overlay", "defaultOpacity": 0.92 },
+      "variants": [{ "variantId": "v006-m", "size": "M", "color": "Gray", "style": "Oversized", "scaleFactor": 1.0 }],
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "product-007",
+      "name": "Floral Summer Dress",
+      "category": "dresses",
+      "imageUrl": "/products/dress-floral.svg",
+      "description": "Vibrant floral print midi dress",
+      "price": "$54.99",
+      "sizes": ["XS", "S", "M", "L", "XL"],
+      "color": "Multicolor",
+      "recommendedPosition": { "x": 0.16, "y": 0.17, "scale": 0.9 },
+      "metadata": { "type": "overlay", "defaultOpacity": 0.91 },
+      "variants": [{ "variantId": "v007-m", "size": "M", "color": "Multicolor", "style": "Regular", "scaleFactor": 1.0 }],
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "product-008",
+      "name": "Black Leather Jacket",
+      "category": "outerwear",
+      "imageUrl": "/products/jacket-leather.svg",
+      "description": "Classic black faux leather biker jacket",
+      "price": "$129.99",
+      "sizes": ["XS", "S", "M", "L", "XL"],
+      "color": "Black",
+      "recommendedPosition": { "x": 0.1, "y": 0.14, "scale": 0.92 },
+      "metadata": { "type": "overlay", "defaultOpacity": 0.95 },
+      "variants": [{ "variantId": "v008-m", "size": "M", "color": "Black", "style": "Regular", "scaleFactor": 1.0 }],
+      "createdAt": "2025-01-01T00:00:00Z"
+    }
+  ]
+}
