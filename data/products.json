@@ -14,7 +14,8 @@
       "variants": [
         { "variantId": "v001-s", "size": "S", "color": "Blue", "style": "Fitted", "scaleFactor": 0.9 },
         { "variantId": "v001-m", "size": "M", "color": "Blue", "style": "Fitted", "scaleFactor": 1.0 },
-        { "variantId": "v001-l", "size": "L", "color": "Blue", "style": "Relaxed", "scaleFactor": 1.1 }
+        { "variantId": "v001-l", "size": "L", "color": "Blue", "style": "Relaxed", "scaleFactor": 1.1 },
+        { "variantId": "v001-xl", "size": "XL", "color": "Blue", "style": "Oversized", "scaleFactor": 1.2 }
       ],
       "createdAt": "2025-01-01T00:00:00Z"
     },
@@ -31,7 +32,8 @@
       "metadata": { "type": "overlay", "defaultOpacity": 0.94 },
       "variants": [
         { "variantId": "v002-s", "size": "S", "color": "Black", "style": "Fitted", "scaleFactor": 0.9 },
-        { "variantId": "v002-m", "size": "M", "color": "Black", "style": "Relaxed", "scaleFactor": 1.0 }
+        { "variantId": "v002-m", "size": "M", "color": "Black", "style": "Relaxed", "scaleFactor": 1.0 },
+        { "variantId": "v002-l", "size": "L", "color": "Black", "style": "Oversized", "scaleFactor": 1.15 }
       ],
       "createdAt": "2025-01-01T00:00:00Z"
     },
@@ -47,7 +49,9 @@
       "recommendedPosition": { "x": 0.1, "y": 0.15, "scale": 0.9 },
       "metadata": { "type": "overlay", "defaultOpacity": 0.93 },
       "variants": [
-        { "variantId": "v003-m", "size": "M", "color": "Denim Blue", "style": "Regular", "scaleFactor": 1.0 }
+        { "variantId": "v003-s", "size": "S", "color": "Denim Blue", "style": "Fitted", "scaleFactor": 0.88 },
+        { "variantId": "v003-m", "size": "M", "color": "Denim Blue", "style": "Regular", "scaleFactor": 1.0 },
+        { "variantId": "v003-l", "size": "L", "color": "Denim Blue", "style": "Relaxed", "scaleFactor": 1.1 }
       ],
       "createdAt": "2025-01-01T00:00:00Z"
     },
@@ -62,7 +66,10 @@
       "color": "White",
       "recommendedPosition": { "x": 0.18, "y": 0.17, "scale": 0.88 },
       "metadata": { "type": "overlay", "defaultOpacity": 0.9 },
-      "variants": [{ "variantId": "v004-m", "size": "M", "color": "White", "style": "Regular", "scaleFactor": 1.0 }],
+      "variants": [
+        { "variantId": "v004-s", "size": "S", "color": "White", "style": "Fitted", "scaleFactor": 0.88 },
+        { "variantId": "v004-m", "size": "M", "color": "White", "style": "Regular", "scaleFactor": 1.0 }
+      ],
       "createdAt": "2025-01-01T00:00:00Z"
     },
     {
@@ -72,11 +79,14 @@
       "imageUrl": "/products/croptop-red.svg",
       "description": "Chic red crop top for a bold look",
       "price": "$24.99",
-      "sizes": ["XS", "S", "M", "L"],
+      "sizes": ["XS", "S", "M", "L", "XL"],
       "color": "Red",
       "recommendedPosition": { "x": 0.18, "y": 0.2, "scale": 0.75 },
       "metadata": { "type": "overlay", "defaultOpacity": 0.93 },
-      "variants": [{ "variantId": "v005-m", "size": "M", "color": "Red", "style": "Regular", "scaleFactor": 1.0 }],
+      "variants": [
+        { "variantId": "v005-s", "size": "S", "color": "Red", "style": "Fitted", "scaleFactor": 0.85 },
+        { "variantId": "v005-m", "size": "M", "color": "Red", "style": "Regular", "scaleFactor": 1.0 }
+      ],
       "createdAt": "2025-01-01T00:00:00Z"
     },
     {
@@ -90,7 +100,11 @@
       "color": "Gray",
       "recommendedPosition": { "x": 0.08, "y": 0.14, "scale": 0.95 },
       "metadata": { "type": "overlay", "defaultOpacity": 0.92 },
-      "variants": [{ "variantId": "v006-m", "size": "M", "color": "Gray", "style": "Oversized", "scaleFactor": 1.0 }],
+      "variants": [
+        { "variantId": "v006-s", "size": "S", "color": "Gray", "style": "Fitted", "scaleFactor": 0.88 },
+        { "variantId": "v006-m", "size": "M", "color": "Gray", "style": "Oversized", "scaleFactor": 1.0 },
+        { "variantId": "v006-l", "size": "L", "color": "Gray", "style": "Oversized", "scaleFactor": 1.12 }
+      ],
       "createdAt": "2025-01-01T00:00:00Z"
     },
     {
@@ -104,7 +118,10 @@
       "color": "Multicolor",
       "recommendedPosition": { "x": 0.16, "y": 0.17, "scale": 0.9 },
       "metadata": { "type": "overlay", "defaultOpacity": 0.91 },
-      "variants": [{ "variantId": "v007-m", "size": "M", "color": "Multicolor", "style": "Regular", "scaleFactor": 1.0 }],
+      "variants": [
+        { "variantId": "v007-s", "size": "S", "color": "Multicolor", "style": "Regular", "scaleFactor": 0.9 },
+        { "variantId": "v007-m", "size": "M", "color": "Multicolor", "style": "Regular", "scaleFactor": 1.0 }
+      ],
       "createdAt": "2025-01-01T00:00:00Z"
     },
     {
@@ -118,7 +135,10 @@
       "color": "Black",
       "recommendedPosition": { "x": 0.1, "y": 0.14, "scale": 0.92 },
       "metadata": { "type": "overlay", "defaultOpacity": 0.95 },
-      "variants": [{ "variantId": "v008-m", "size": "M", "color": "Black", "style": "Regular", "scaleFactor": 1.0 }],
+      "variants": [
+        { "variantId": "v008-s", "size": "S", "color": "Black", "style": "Fitted", "scaleFactor": 0.9 },
+        { "variantId": "v008-m", "size": "M", "color": "Black", "style": "Regular", "scaleFactor": 1.0 }
+      ],
       "createdAt": "2025-01-01T00:00:00Z"
     }
   ]
