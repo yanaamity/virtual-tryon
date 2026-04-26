@@ -1,5 +1,5 @@
 /**
- * Draw the user photo on canvas, scaled to fit
+ * Draw the user photo on canvas, scaled to fit (letterbox)
  */
 export function drawUserPhoto(canvas, img) {
   const ctx = canvas.getContext('2d');
@@ -18,7 +18,6 @@ export function drawClothingOverlay(canvas, clothingImg, position, scaleFactor, 
   const ctx = canvas.getContext('2d');
   const w = clothingImg.naturalWidth * scaleFactor;
   const h = clothingImg.naturalHeight * scaleFactor;
-  
   ctx.save();
   ctx.globalAlpha = opacity;
   ctx.drawImage(clothingImg, position.x, position.y, w, h);
@@ -33,14 +32,7 @@ export function canvasToBase64(canvas) {
 }
 
 /**
- * Calculate clothing position based on canvas fraction coords
- */
-export function fractionalToPixel(canvas, fx, fy) {
-  return { x: fx * canvas.width, y: fy * canvas.height };
-}
-
-/**
- * Load a script tag from CDN (idempotent)
+ * Load a script tag from CDN (idempotent — safe to call multiple times)
  */
 function loadScript(src) {
   return new Promise((resolve, reject) => {
@@ -48,56 +40,87 @@ function loadScript(src) {
     const s = document.createElement('script');
     s.src = src;
     s.onload = resolve;
-    s.onerror = reject;
+    s.onerror = () => reject(new Error(`Failed to load: ${src}`));
     document.head.appendChild(s);
   });
 }
 
-/**
- * Detect person bounding box using COCO-SSD (loaded from CDN)
- * Returns simplified landmark data for clothing placement
- */
-export async function detectPersonBbox(imgElement) {
-  try {
-    if (typeof window === 'undefined') return null;
-    // Load TF.js from CDN if not already present
-    if (!window.cocoSsd) {
-      await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js');
-      await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js');
-    }
-    const model = await window.cocoSsd.load();
-    const predictions = await model.detect(imgElement);
-    
-    const person = predictions.find(p => p.class === 'person');
-    if (!person) return null;
-    
-    const [bx, by, bw, bh] = person.bbox;
-    return {
-      x: bx,
-      y: by,
-      width: bw,
-      height: bh,
-      shoulderY: by + bh * 0.08,
-      chestCenterX: bx + bw / 2,
-      chestCenterY: by + bh * 0.25,
-      torsoWidth: bw * 0.65,
-    };
-  } catch (err) {
-    console.error('Detection error:', err);
-    return null;
-  }
-}
+// Cached MoveNet detector — created once, reused on every call
+let _detector = null;
 
 /**
- * Scale person bbox coordinates to canvas dimensions
+ * detectPoseKeypoints — uses TensorFlow.js MoveNet Lightning (browser, free, no API credits)
+ *
+ * MoveNet returns 17 body keypoints including exact pixel coordinates for:
+ *   left_shoulder, right_shoulder, left_hip, right_hip, nose, etc.
+ *
+ * This is far more accurate for clothing placement than COCO-SSD's bounding box,
+ * because we know the EXACT shoulder line and can scale the garment to the
+ * real shoulder width detected in the image.
+ *
+ * @param {HTMLCanvasElement|HTMLImageElement} imageEl
+ * @returns {{ centerX, topY, shoulderWidth, torsoHeight } | null}
  */
-export function scaleDetectionToCanvas(canvas, bbox, userImgLayout) {
-  const scaleX = userImgLayout.imgW / (bbox.naturalWidth || userImgLayout.imgW);
-  const scaleY = userImgLayout.imgH / (bbox.naturalHeight || userImgLayout.imgH);
-  
-  return {
-    shoulderY: userImgLayout.y + bbox.shoulderY * (userImgLayout.imgH / (bbox.height / 0.92)),
-    chestCenterX: userImgLayout.x + bbox.chestCenterX * scaleX,
-    torsoWidth: bbox.torsoWidth * scaleX,
-  };
+export async function detectPoseKeypoints(imageEl) {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    // ── Load TF.js + MoveNet from CDN if not already present ──────────────
+    if (!window.poseDetection) {
+      await loadScript(
+        'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js'
+      );
+      await loadScript(
+        'https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js'
+      );
+    }
+
+    const pd = window.poseDetection;
+
+    // ── Create detector once and cache it ─────────────────────────────────
+    if (!_detector) {
+      _detector = await pd.createDetector(
+        pd.SupportedModels.MoveNet,
+        {
+          modelType: pd.movenet.modelType.SINGLEPOSE_LIGHTNING,
+          // Lightning = smallest + fastest model (~6 MB, ~30ms inference)
+        }
+      );
+    }
+
+    // ── Run inference ─────────────────────────────────────────────────────
+    const poses = await _detector.estimatePoses(imageEl);
+    if (!poses || poses.length === 0) return null;
+
+    // Map keypoints by name, filter out low-confidence ones
+    const kp = {};
+    poses[0].keypoints.forEach(k => {
+      if (k.score > 0.25) kp[k.name] = k;
+    });
+
+    const lShoulder = kp['left_shoulder'];
+    const rShoulder = kp['right_shoulder'];
+
+    // Shoulders are required — everything else is a bonus
+    if (!lShoulder || !rShoulder) return null;
+
+    const shoulderWidth  = Math.abs(rShoulder.x - lShoulder.x);
+    const centerX        = (lShoulder.x + rShoulder.x) / 2;
+    // Top of garment: a few pixels above the higher shoulder
+    const shoulderTopY   = Math.min(lShoulder.y, rShoulder.y) - shoulderWidth * 0.06;
+
+    // Torso height: shoulder-to-hip distance, or estimate from shoulder width
+    const lHip = kp['left_hip'];
+    const rHip = kp['right_hip'];
+    const hipY = lHip && rHip ? (lHip.y + rHip.y) / 2 : null;
+    const torsoHeight = hipY
+      ? hipY - shoulderTopY
+      : shoulderWidth * 1.5; // rough estimate if hips not detected
+
+    return { centerX, topY: shoulderTopY, shoulderWidth, torsoHeight };
+  } catch (err) {
+    console.warn('MoveNet detection failed:', err.message);
+    _detector = null; // reset so next call can retry
+    return null;
+  }
 }

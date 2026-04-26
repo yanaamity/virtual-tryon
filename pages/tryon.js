@@ -86,37 +86,41 @@ export default function TryOnPage() {
       setScale(idealScale);
       setPlacementMethod('heuristic');
 
-      // ── Phase 2: AI body detection (async) ──────────────────────────────
+      // ── Phase 2: MoveNet pose detection (async, free, browser-only) ────────
+      // MoveNet Lightning gives exact left_shoulder / right_shoulder keypoints,
+      // so we scale the garment to the real shoulder width and align the top
+      // of the clothing precisely to the shoulder line.
       setDetecting(true);
       try {
-        const { detectPersonBbox } = await import('../components/Canvas/CanvasUtils');
+        const { detectPoseKeypoints } = await import('../components/Canvas/CanvasUtils');
 
-        // Draw user photo onto a temp canvas at natural size for detection
+        // Run detection on the photo at its natural resolution for best accuracy
         const tmpCanvas = document.createElement('canvas');
-        tmpCanvas.width = userImg.naturalWidth;
+        tmpCanvas.width  = userImg.naturalWidth;
         tmpCanvas.height = userImg.naturalHeight;
         tmpCanvas.getContext('2d').drawImage(userImg, 0, 0);
 
-        const bbox = await detectPersonBbox(tmpCanvas);
-        if (bbox) {
+        const pose = await detectPoseKeypoints(tmpCanvas);
+        if (pose) {
+          // Scale detected keypoint coords (natural px) → canvas px
           const sX = photoW / userImg.naturalWidth;
           const sY = photoH / userImg.naturalHeight;
 
-          const shoulderY  = photoY + bbox.shoulderY  * sY;
-          const chestCenterX = photoX + bbox.chestCenterX * sX;
-          const torsoW = bbox.torsoWidth * sX;
+          const canvasCenterX     = photoX + pose.centerX     * sX;
+          const canvasTopY        = photoY + pose.topY        * sY;
+          const canvasShoulderW   = pose.shoulderWidth        * sX;
 
-          // Scale clothing to match detected torso width
-          const aiScale  = Math.min(2.0, Math.max(0.3, torsoW / clothImg.naturalWidth));
-          const aiClothW = clothImg.naturalWidth * aiScale;
+          // Clothing width = shoulder width × 1.15 (slight overhang each side)
+          const poseScale  = Math.min(2.0, Math.max(0.3, (canvasShoulderW * 1.15) / clothImg.naturalWidth));
+          const poseClothW = clothImg.naturalWidth * poseScale;
 
-          setPosition({ x: chestCenterX - aiClothW / 2, y: shoulderY });
-          setScale(aiScale);
+          setPosition({ x: canvasCenterX - poseClothW / 2, y: canvasTopY });
+          setScale(poseScale);
           setPlacementMethod('ai');
         }
-        // If no person detected, heuristic placement stays
+        // If no pose detected, heuristic placement stays
       } catch {
-        // COCO-SSD failed or CDN unavailable — heuristic placement stays
+        // MoveNet CDN unavailable — heuristic placement stays, no error shown
       } finally {
         setDetecting(false);
       }
