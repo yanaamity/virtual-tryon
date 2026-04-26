@@ -1,111 +1,73 @@
-import { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { drawUserPhoto, drawClothingOverlay, canvasToBase64 } from './CanvasUtils';
 
-const CompositeCanvas = forwardRef(function CompositeCanvas({
-  userPhoto,
-  selectedProduct,
-  mode,
-  position,
-  scale,
-  opacity,
-  onPositionChange,
-  onPersonDetected,
-}, ref) {
-  const canvasRef = useRef(null);
-  const userImgRef = useRef(null);
+/**
+ * CompositeCanvas
+ *
+ * Renders the user photo + clothing overlay on an HTML5 canvas.
+ * Clothing placement is fully managed by the parent (tryon.js), which
+ * runs auto-placement (heuristic + optional COCO-SSD) and passes down
+ * the computed `position`. Drag on this canvas updates `position` via
+ * onPositionChange for fine-tuning only.
+ *
+ * Props:
+ *   userPhoto       – data-url or blob URL of the user's photo
+ *   selectedProduct – { imageUrl, ... }  null = no overlay
+ *   position        – { x, y } in canvas pixels; null = no overlay yet
+ *   scale           – clothing scale factor
+ *   opacity         – clothing opacity 0-1
+ *   onPositionChange– (newPos) => void  called while dragging
+ */
+const CompositeCanvas = forwardRef(function CompositeCanvas(
+  { userPhoto, selectedProduct, position, scale = 1, opacity = 0.92, onPositionChange },
+  ref
+) {
+  const canvasRef      = useRef(null);
+  const userImgRef     = useRef(null);
   const clothingImgRef = useRef(null);
-  const isDragging = useRef(false);
-  const dragStart = useRef({ x: 0, y: 0 });
-  const layoutRef = useRef(null);
+  const isDragging     = useRef(false);
+  const dragStart      = useRef({ x: 0, y: 0 });
 
-  // Expose capture method to parent
+  // Expose capture() to parent
   useImperativeHandle(ref, () => ({
-    capture: () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return null;
-      return canvasToBase64(canvas);
-    },
+    capture: () => canvasRef.current ? canvasToBase64(canvasRef.current) : null,
   }));
 
-  // Load user photo
+  /* ── Image loaders ─────────────────────────────────────────────── */
+
   useEffect(() => {
-    if (!userPhoto) return;
+    if (!userPhoto) { userImgRef.current = null; redraw(); return; }
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      userImgRef.current = img;
-      redraw();
-    };
+    img.onload = () => { userImgRef.current = img; redraw(); };
     img.onerror = () => {
-      // try without crossOrigin
       const img2 = new Image();
       img2.onload = () => { userImgRef.current = img2; redraw(); };
       img2.src = userPhoto;
     };
     img.src = userPhoto;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPhoto]);
 
-  // Load clothing image
   useEffect(() => {
-    if (!selectedProduct) {
-      clothingImgRef.current = null;
-      redraw();
-      return;
-    }
+    if (!selectedProduct?.imageUrl) { clothingImgRef.current = null; redraw(); return; }
+    const url = selectedProduct.imageUrl;
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = async () => {
-      clothingImgRef.current = img;
-      
-      if (mode === 'smart' && userImgRef.current && onPersonDetected) {
-        // Try to detect person
-        try {
-          const { detectPersonBbox } = await import('./CanvasUtils');
-          const canvas = canvasRef.current;
-          // Create temp canvas with user photo at natural size for detection
-          const tmpCanvas = document.createElement('canvas');
-          tmpCanvas.width = userImgRef.current.naturalWidth;
-          tmpCanvas.height = userImgRef.current.naturalHeight;
-          const tmpCtx = tmpCanvas.getContext('2d');
-          tmpCtx.drawImage(userImgRef.current, 0, 0);
-          
-          const bbox = await detectPersonBbox(tmpCanvas);
-          if (bbox && layoutRef.current) {
-            const layout = layoutRef.current;
-            const imgScaleX = layout.imgW / userImgRef.current.naturalWidth;
-            const imgScaleY = layout.imgH / userImgRef.current.naturalHeight;
-            
-            const shoulderY = layout.y + bbox.shoulderY * imgScaleY;
-            const chestCenterX = layout.x + bbox.chestCenterX * imgScaleX;
-            const torsoW = bbox.torsoWidth * imgScaleX;
-            
-            const clothW = clothingImgRef.current.naturalWidth * scale;
-            const smartX = chestCenterX - clothW / 2;
-            const smartY = shoulderY;
-            
-            onPersonDetected({ x: smartX, y: smartY, detected: true });
-          }
-        } catch (err) {
-          console.warn('Smart detection failed, using simple mode');
-          onPersonDetected({ detected: false });
-        }
-      }
-      
-      redraw();
-    };
+    img.onload = () => { clothingImgRef.current = img; redraw(); };
     img.onerror = () => {
-      // Try without crossOrigin
       const img2 = new Image();
       img2.onload = () => { clothingImgRef.current = img2; redraw(); };
-      img2.src = selectedProduct.imageUrl;
+      img2.src = url;
     };
-    img.src = selectedProduct.imageUrl;
-  }, [selectedProduct, mode]);
+    img.src = url;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProduct?.imageUrl]);
 
-  // Redraw on param changes
-  useEffect(() => {
-    redraw();
-  }, [position, scale, opacity, mode]);
+  // Re-render whenever position/scale/opacity change
+  useEffect(() => { redraw(); }, [position, scale, opacity]);
+
+  /* ── Drawing ────────────────────────────────────────────────────── */
 
   const redraw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -113,7 +75,7 @@ const CompositeCanvas = forwardRef(function CompositeCanvas({
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw gradient background
+    // Background gradient
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, '#f8fafc');
     gradient.addColorStop(1, '#e2e8f0');
@@ -121,54 +83,54 @@ const CompositeCanvas = forwardRef(function CompositeCanvas({
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     if (!userImgRef.current) {
-      // Placeholder
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '16px sans-serif';
+      ctx.font = '15px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Upload your photo to begin', canvas.width / 2, canvas.height / 2);
       return;
     }
 
-    // Draw user photo
-    const layout = drawUserPhoto(canvas, userImgRef.current);
-    layoutRef.current = layout;
+    // Draw user photo (letterboxed)
+    drawUserPhoto(canvas, userImgRef.current);
 
-    // Draw clothing
+    // Draw clothing only when a position has been computed by parent
     if (clothingImgRef.current && position) {
       drawClothingOverlay(canvas, clothingImgRef.current, position, scale, opacity);
     }
   }, [position, scale, opacity]);
 
-  // Mouse/touch drag handling
-  const getCanvasPos = (e, canvas) => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
+  /* ── Drag to fine-tune ──────────────────────────────────────────── */
+
+  const getCanvasCoord = (e, canvas) => {
+    const rect   = canvas.getBoundingClientRect();
+    const scaleX = canvas.width  / rect.width;
     const scaleY = canvas.height / rect.height;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const src    = e.touches ? e.touches[0] : e;
     return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY,
+      x: (src.clientX - rect.left) * scaleX,
+      y: (src.clientY - rect.top)  * scaleY,
     };
   };
 
-  const handleMouseDown = useCallback((e) => {
+  const handlePointerDown = useCallback((e) => {
     if (!clothingImgRef.current || !position) return;
     isDragging.current = true;
-    const pos = getCanvasPos(e, canvasRef.current);
-    dragStart.current = { x: pos.x - position.x, y: pos.y - position.y };
+    const p = getCanvasCoord(e, canvasRef.current);
+    dragStart.current = { x: p.x - position.x, y: p.y - position.y };
   }, [position]);
 
-  const handleMouseMove = useCallback((e) => {
+  const handlePointerMove = useCallback((e) => {
     if (!isDragging.current || !onPositionChange) return;
-    const pos = getCanvasPos(e, canvasRef.current);
+    const p = getCanvasCoord(e, canvasRef.current);
     onPositionChange({
-      x: pos.x - dragStart.current.x,
-      y: pos.y - dragStart.current.y,
+      x: p.x - dragStart.current.x,
+      y: p.y - dragStart.current.y,
     });
   }, [onPositionChange]);
 
-  const handleMouseUp = () => { isDragging.current = false; };
+  const handlePointerUp = () => { isDragging.current = false; };
+
+  /* ── Render ─────────────────────────────────────────────────────── */
 
   return (
     <div className="relative w-full">
@@ -176,19 +138,19 @@ const CompositeCanvas = forwardRef(function CompositeCanvas({
         ref={canvasRef}
         width={600}
         height={700}
-        className="w-full rounded-2xl shadow-lg border border-gray-200 cursor-move"
-        style={{ maxHeight: '70vh', objectFit: 'contain', background: '#f8fafc' }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleMouseDown}
-        onTouchMove={handleMouseMove}
-        onTouchEnd={handleMouseUp}
+        className="w-full rounded-2xl shadow-lg border border-gray-200 cursor-move select-none"
+        style={{ maxHeight: '70vh', background: '#f8fafc' }}
+        onMouseDown={handlePointerDown}
+        onMouseMove={handlePointerMove}
+        onMouseUp={handlePointerUp}
+        onMouseLeave={handlePointerUp}
+        onTouchStart={handlePointerDown}
+        onTouchMove={handlePointerMove}
+        onTouchEnd={handlePointerUp}
       />
-      {clothingImgRef.current && (
-        <div className="absolute bottom-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
-          Drag to reposition
+      {clothingImgRef.current && position && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/40 text-white text-xs px-3 py-1 rounded-full pointer-events-none">
+          Drag to fine-tune position
         </div>
       )}
     </div>
